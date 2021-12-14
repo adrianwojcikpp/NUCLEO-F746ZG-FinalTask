@@ -2,7 +2,7 @@
  **************************************************************************
  * @file    led_control_uart_example.m
  * @author  AW             Adrian.Wojcik@put.poznan.pl
- * @version 1.2
+ * @version 1.0
  * @date    12-Dec-2021
  * @brief   Simple MATLAB serial port client example for LED current control
  **************************************************************************
@@ -25,9 +25,6 @@ hFig = figure();
     ylabel('LED current [mA]');
     hold on; grid on;
  
-%% Log file
-filename = [ 'BH1750_LED_' datestr(datetime, 30)];
-
 %% Perform experiment
 k = 1;               % [-]
 

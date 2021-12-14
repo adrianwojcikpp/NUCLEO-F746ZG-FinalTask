@@ -80,15 +80,16 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		{
 #ifdef CLOSE_LOOP
 			sscanf((char*)&rx_buffer[1], "%f", &current_ref);
-#elif
+#else
   		sscanf((char*)&rx_buffer[1], "%f", &duty);
   	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, (uint32_t)(duty*10));
 #endif
 		}
 		else
 		{
-			uint8_t tx_buffer[32];
-			int resp_len = sprintf((char*)tx_buffer, "{ \"I1\":%f }\r", current);
+			uint8_t tx_buffer[64];
+			// TODO: add physical units!
+			int resp_len = sprintf((char*)tx_buffer, "{ \"I1\":%f, \"I1REF\":%f, \"D1\":%f }\r", current, current_ref, duty);
 			HAL_UART_Transmit(&huart3, tx_buffer, resp_len, 10);
 		}
 		HAL_UART_Receive_IT(&huart3, rx_buffer, msg_len);
@@ -115,7 +116,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
 	float ain = 3.3f * HAL_ADC_GetValue(hadc) / 4095.0f; // [V]
-	current = 1000.0f * (ain / resistance);               // [mA]
+	current = 1000.0f * (ain / resistance);              // [mA]
 
 #ifdef CLOSE_LOOP
 	duty = PID_GetOutput(&hpid1, current_ref, current);
@@ -162,9 +163,9 @@ int main(void)
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
 
 #ifdef CLOSE_LOOP
-  msg_len = strlen("D00.0mA\r");
-#elif
-  msg_len = strlen("D000.0%\r");
+  msg_len = strlen("R00.0mA\r");
+#else
+  msg_len = strlen("R000.0%\r");
 #endif
 
   HAL_UART_Receive_IT(&huart3, rx_buffer, msg_len);

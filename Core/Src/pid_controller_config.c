@@ -23,7 +23,7 @@
 
 /* Public variables ----------------------------------------------------------*/
 PID_HandleTypeDef hpid1 = {
-  .Kp = 0.0f, .Ki = 1.0f, .Kd = 0.0f,
+  .Kp = 1.0f, .Ki = 100.0f, .Kd = 0.0f,
   .N = 0.01f, .Ts = 0.001f,
 	.LimitUpper = 100.0f, .LimitLower = 0.0f
 };

@@ -65,7 +65,7 @@ float PID_GetOutput(PID_HandleTypeDef* hpid, float yref, float y)
 
   /* Anti wind-up */
   if( u != u_sat)
-	hpid->e_int -= hpid->Ki * hpid->Ts * e;
+  	hpid->e_int -= hpid->Ki * hpid->Ts * e;
 
   return u_sat;
 }
