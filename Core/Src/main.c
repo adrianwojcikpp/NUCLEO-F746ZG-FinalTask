@@ -76,26 +76,26 @@ void SystemClock_Config(void);
   */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if(huart == &huart3)
-	{
-		if(rx_buffer[0] == 'R')
-		{
+  if(huart == &huart3)
+  {
+    if(rx_buffer[0] == 'R')
+    {
 #ifdef CLOSED_LOOP
-			sscanf((char*)&rx_buffer[1], "%f", &current_ref);
+      sscanf((char*)&rx_buffer[1], "%f", &current_ref);
 #else
-  		sscanf((char*)&rx_buffer[1], "%f", &duty);
-  	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, (uint32_t)(duty*10));
+      sscanf((char*)&rx_buffer[1], "%f", &duty);
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, (uint32_t)(duty*10));
 #endif
-		}
-		else
-		{
-			uint8_t tx_buffer[64];
-			// TODO: add physical units!
-			int resp_len = sprintf((char*)tx_buffer, "{ \"I1\":%f, \"I1REF\":%f, \"D1\":%f }\r", current, current_ref, duty);
-			HAL_UART_Transmit(&huart3, tx_buffer, resp_len, 10);
-		}
-		HAL_UART_Receive_IT(&huart3, rx_buffer, msg_len);
-	}
+    }
+    else
+    {
+      uint8_t tx_buffer[64];
+      // TODO: add physical units!
+      int resp_len = sprintf((char*)tx_buffer, "{ \"I1\":%f, \"I1REF\":%f, \"D1\":%f }\r", current, current_ref, duty);
+      HAL_UART_Transmit(&huart3, tx_buffer, resp_len, 10);
+    }
+    HAL_UART_Receive_IT(&huart3, rx_buffer, msg_len);
+  }
 }
 
 /**
@@ -105,11 +105,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	if(htim == &htim2)
-	{
-		HAL_GPIO_WritePin(DEBUG1_GPIO_Port, DEBUG1_Pin, GPIO_PIN_SET);
-		HAL_ADC_Start_IT(&hadc1);
-	}
+  if(htim == &htim2)
+  {
+    HAL_GPIO_WritePin(DEBUG1_GPIO_Port, DEBUG1_Pin, GPIO_PIN_SET);
+    HAL_ADC_Start_IT(&hadc1);
+  }
 }
 
 /**
@@ -120,18 +120,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-	if(hadc == &hadc1)
-	{
-		float ain = 3.3f * HAL_ADC_GetValue(hadc) / 4095.0f; // [V]
-		current = 1000.0f * (ain / resistance);              // [mA]
+  if(hadc == &hadc1)
+  {
+    float ain = 3.3f * HAL_ADC_GetValue(hadc) / 4095.0f; // [V]
+    current = 1000.0f * (ain / resistance);              // [mA]
 
-	#ifdef CLOSED_LOOP
-		duty = PID_GetOutput(&hpid1, current_ref, current);  // [%]
-		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, (uint32_t)(duty*10)); // ARR = 999
-	#endif
+  #ifdef CLOSED_LOOP
+    duty = PID_GetOutput(&hpid1, current_ref, current);  // [%]
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, (uint32_t)(duty*10)); // ARR = 999
+  #endif
 
-		HAL_GPIO_WritePin(DEBUG1_GPIO_Port, DEBUG1_Pin, GPIO_PIN_RESET);
-	}
+    HAL_GPIO_WritePin(DEBUG1_GPIO_Port, DEBUG1_Pin, GPIO_PIN_RESET);
+  }
 }
 
 /* USER CODE END 0 */
@@ -143,9 +143,9 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	SWV[0] = 0.0f;
-	SWV[1] = 0.0f;
-	SWV[2] = 0.0f;
+  SWV[0] = 0.0f;
+  SWV[1] = 0.0f;
+  SWV[2] = 0.0f;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -182,22 +182,22 @@ int main(void)
 
   HAL_UART_Receive_IT(&huart3, rx_buffer, msg_len);
 
-	SWV[0] = 12.0f;
-	SWV[1] = 12.0f;
-	SWV[2] = 100.0f;
+  SWV[0] = 12.0f;
+  SWV[1] = 12.0f;
+  SWV[2] = 100.0f;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-  	SWV[0] = current;
-  	SWV[1] = current_ref;
-  	SWV[2] = duty;
+    SWV[0] = current;
+    SWV[1] = current_ref;
+    SWV[2] = duty;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  	HAL_Delay(0);
+    HAL_Delay(0);
   }
   /* USER CODE END 3 */
 }
