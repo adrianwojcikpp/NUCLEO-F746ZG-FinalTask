@@ -57,6 +57,8 @@ float current = 0.0f;            // [mA]
 float current_ref = 10.0f;       // [mA]
 const float resistance = 100.0f; // [Ohm]
 
+float SWV[4];
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -104,7 +106,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(htim == &htim2)
+	{
+		HAL_GPIO_WritePin(DEBUG1_GPIO_Port, DEBUG1_Pin, GPIO_PIN_SET);
 		HAL_ADC_Start_IT(&hadc1);
+	}
 }
 
 /**
@@ -115,13 +120,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-	float ain = 3.3f * HAL_ADC_GetValue(hadc) / 4095.0f; // [V]
-	current = 1000.0f * (ain / resistance);              // [mA]
+	if(hadc == &hadc1)
+	{
+		float ain = 3.3f * HAL_ADC_GetValue(hadc) / 4095.0f; // [V]
+		current = 1000.0f * (ain / resistance);              // [mA]
 
-#ifdef CLOSE_LOOP
-	duty = PID_GetOutput(&hpid1, current_ref, current);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, (uint32_t)(duty*10));
-#endif
+	#ifdef CLOSE_LOOP
+		duty = PID_GetOutput(&hpid1, current_ref, current);
+		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, (uint32_t)(duty*10));
+	#endif
+
+		HAL_GPIO_WritePin(DEBUG1_GPIO_Port, DEBUG1_Pin, GPIO_PIN_RESET);
+	}
 }
 
 /* USER CODE END 0 */
@@ -133,7 +143,9 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	SWV[0] = 0.0f;
+	SWV[1] = 0.0f;
+	SWV[2] = 0.0f;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -169,12 +181,19 @@ int main(void)
 #endif
 
   HAL_UART_Receive_IT(&huart3, rx_buffer, msg_len);
+
+	SWV[0] = 12.0f;
+	SWV[1] = 12.0f;
+	SWV[2] = 100.0f;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+  	SWV[0] = current;
+  	SWV[1] = current_ref;
+  	SWV[2] = duty;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
