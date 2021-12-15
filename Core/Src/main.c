@@ -125,10 +125,10 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
     float ain = 3.3f * HAL_ADC_GetValue(hadc) / 4095.0f; // [V]
     current = 1000.0f * (ain / resistance);              // [mA]
 
-  #ifdef CLOSED_LOOP
+#ifdef CLOSED_LOOP
     duty = PID_GetOutput(&hpid1, current_ref, current);  // [%]
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, (uint32_t)(duty*10)); // ARR = 999
-  #endif
+#endif
 
     HAL_GPIO_WritePin(DEBUG1_GPIO_Port, DEBUG1_Pin, GPIO_PIN_RESET);
   }
