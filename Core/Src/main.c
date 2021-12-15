@@ -38,7 +38,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define CLOSE_LOOP
+#define CLOSED_LOOP
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -80,7 +80,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	{
 		if(rx_buffer[0] == 'R')
 		{
-#ifdef CLOSE_LOOP
+#ifdef CLOSED_LOOP
 			sscanf((char*)&rx_buffer[1], "%f", &current_ref);
 #else
   		sscanf((char*)&rx_buffer[1], "%f", &duty);
@@ -125,9 +125,9 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 		float ain = 3.3f * HAL_ADC_GetValue(hadc) / 4095.0f; // [V]
 		current = 1000.0f * (ain / resistance);              // [mA]
 
-	#ifdef CLOSE_LOOP
-		duty = PID_GetOutput(&hpid1, current_ref, current);
-		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, (uint32_t)(duty*10));
+	#ifdef CLOSED_LOOP
+		duty = PID_GetOutput(&hpid1, current_ref, current);  // [%]
+		__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, (uint32_t)(duty*10)); // ARR = 999
 	#endif
 
 		HAL_GPIO_WritePin(DEBUG1_GPIO_Port, DEBUG1_Pin, GPIO_PIN_RESET);
@@ -174,7 +174,7 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
 
-#ifdef CLOSE_LOOP
+#ifdef CLOSED_LOOP
   msg_len = strlen("R00.0mA\r");
 #else
   msg_len = strlen("R000.0%\r");
